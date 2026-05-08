@@ -66,6 +66,9 @@
   .form-row input, .form-row select, .form-row textarea { width: 100%; padding: 0.7rem 0.9rem; border: 1.5px solid var(--border); border-radius: 10px; background: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--brown); outline: none; transition: border-color 0.15s; }
   .form-row input:focus, .form-row select:focus, .form-row textarea:focus { border-color: var(--brown-light); }
   .form-row textarea { min-height: 120px; resize: vertical; }
+  .form-row-half { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+  .form-row-half label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--brown-light); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+  .form-row-half input { width: 100%; padding: 0.7rem 0.9rem; border: 1.5px solid var(--border); border-radius: 10px; background: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--brown); outline: none; }
   .ocr-status { background: var(--green-light); color: var(--green); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.85rem; margin-bottom: 1rem; display: none; line-height: 1.5; }
   .ocr-status.error { background: #FDE8E2; color: #8B3018; }
   .btn-primary { width: 100%; padding: 0.85rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 500; cursor: pointer; transition: background 0.15s; margin-top: 0.5rem; }
@@ -85,18 +88,31 @@
   .meta-item { font-size: 0.82rem; color: var(--text-muted); }
   .meta-item strong { color: var(--brown-light); display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; }
   .detail-content { background: var(--cream); border-radius: 12px; padding: 1rem; font-size: 0.9rem; line-height: 1.7; color: var(--brown); white-space: pre-wrap; word-break: break-word; }
-  .detail-actions { display: flex; gap: 8px; margin-top: 1rem; }
-  .btn-danger { flex: 1; padding: 0.75rem; background: #FDE8E2; color: #8B3018; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; }
-  .btn-secondary { flex: 1; padding: 0.75rem; background: var(--cream); color: var(--brown-light); border: 1.5px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; }
+  .detail-actions { display: flex; gap: 8px; margin-top: 1rem; flex-wrap: wrap; }
+  .btn-danger { flex: 1; padding: 0.75rem; background: #FDE8E2; color: #8B3018; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; min-width: 80px; }
+  .btn-secondary { flex: 1; padding: 0.75rem; background: var(--cream); color: var(--brown-light); border: 1.5px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; min-width: 80px; }
+  .btn-print { flex: 1; padding: 0.75rem; background: var(--brown); color: var(--cream); border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; min-width: 80px; }
   .count-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem; }
   #toast { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%); background: var(--brown); color: var(--cream); padding: 0.65rem 1.25rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500; z-index: 999; transition: opacity 0.3s; font-family: 'DM Sans', sans-serif; opacity: 0; pointer-events: none; }
+  @media print {
+    .header, .fab, .chips, .search-wrap, .count-label, #toast, .overlay { display: none !important; }
+    .main { padding: 0 !important; }
+    .recipe-grid { display: block !important; }
+    .print-page { page-break-after: always; padding: 1.5rem; font-family: Georgia, serif; max-width: 700px; margin: 0 auto; }
+    .print-title { font-size: 1.8rem; font-weight: bold; margin-bottom: 0.5rem; }
+    .print-meta { font-size: 0.85rem; color: #666; margin-bottom: 1rem; border-bottom: 1px solid #ccc; padding-bottom: 0.75rem; }
+    .print-body { font-size: 0.95rem; line-height: 1.8; white-space: pre-wrap; }
+    .print-img { max-width: 300px; border-radius: 8px; margin-bottom: 1rem; }
+    .no-print { display: none !important; }
+  }
 </style>
 </head>
 <body>
 <div class="header">
   <h1>My Recipe Box</h1>
   <div class="header-actions">
-    <button class="icon-btn" onclick="openSettings()">⚙️</button>
+    <button class="icon-btn" onclick="exportAllRecipes()" title="Export All">📥</button>
+    <button class="icon-btn" onclick="openSettings()" title="Settings">⚙️</button>
   </div>
 </div>
 <div class="main">
@@ -127,12 +143,26 @@
       <div class="form-row"><label>Category</label>
         <select id="recipeCategory">
           <option value="">— Select —</option>
-          <option>Breakfast</option><option>Lunch</option><option>Dinner</option>
-          <option>Desserts</option><option>Snacks</option><option>Soups & Salads</option>
-          <option>Sides</option><option>Drinks</option><option>Other</option>
+          <option>Appetizers</option>
+          <option>Breakfast</option>
+          <option>Lunch</option>
+          <option>Dinner</option>
+          <option>Desserts</option>
+          <option>Snacks</option>
+          <option>Soups & Salads</option>
+          <option>Sides</option>
+          <option>Breads & Baking</option>
+          <option>Grilling & BBQ</option>
+          <option>Slow Cooker</option>
+          <option>Sauces & Dressings</option>
+          <option>Drinks</option>
+          <option>Other</option>
         </select>
       </div>
-      <div class="form-row"><label>Prep / Cook Time (optional)</label><input type="text" id="recipeTime" placeholder="e.g. 30 min prep, 1 hr cook"></div>
+      <div class="form-row-half">
+        <div><label>Prep Time</label><input type="text" id="recipePrepTime" placeholder="e.g. 20 min"></div>
+        <div><label>Cook Time</label><input type="text" id="recipeCookTime" placeholder="e.g. 45 min"></div>
+      </div>
       <div class="form-row"><label>Full Recipe Text</label><textarea id="recipeText" placeholder="Auto-filled from your photo. You can also type or edit here."></textarea></div>
       <button class="btn-primary" id="saveBtn" onclick="saveRecipe()">Save Recipe</button>
     </div>
@@ -151,6 +181,7 @@
       <div class="detail-content" id="detailContent"></div>
       <div class="detail-actions">
         <button class="btn-secondary" onclick="closeOverlay('detailOverlay')">Close</button>
+        <button class="btn-print" onclick="printCurrentRecipe()">🖨️ Print</button>
         <button class="btn-danger" onclick="deleteCurrentRecipe()">Delete</button>
       </div>
     </div>
@@ -172,6 +203,7 @@
     <button class="save-settings-btn" onclick="saveSettings()">Save Settings</button>
   </div>
 </div>
+<div id="printArea" style="display:none"></div>
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getFirestore, collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
@@ -241,7 +273,8 @@ function getFiltered() {
     if (activeFilter !== 'All' && r.category !== activeFilter) return false;
     if (!q) return true;
     return (r.name||'').toLowerCase().includes(q)||(r.text||'').toLowerCase().includes(q)||
-           (r.category||'').toLowerCase().includes(q)||(r.time||'').toLowerCase().includes(q);
+           (r.category||'').toLowerCase().includes(q)||(r.prepTime||'').toLowerCase().includes(q)||
+           (r.cookTime||'').toLowerCase().includes(q);
   });
 }
 function renderRecipes() {
@@ -258,13 +291,15 @@ function renderRecipes() {
     '<div class="card-img">' + (r.image?'<img src="' + r.image + '" alt="' + r.name + '" loading="lazy">':'🍽️') + '</div>' +
     '<div class="card-body"><div class="card-category">' + (r.category||'Uncategorized') + '</div>' +
     '<div class="card-title">' + (r.name||'Untitled Recipe') + '</div>' +
-    '<div class="card-meta">' + (r.time?'<span>⏱ ' + r.time + '</span>':'') +
+    '<div class="card-meta">' +
+    (r.prepTime?'<span>Prep: ' + r.prepTime + '</span>':'') +
+    (r.cookTime?'<span>Cook: ' + r.cookTime + '</span>':'') +
     '<span>' + new Date(r.created).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + '</span></div></div></div>'
   ).join('');
 }
 
 function openAdd() {
-  ['recipeName','recipeTime','recipeText'].forEach(id => document.getElementById(id).value = '');
+  ['recipeName','recipeText','recipePrepTime','recipeCookTime'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('recipeCategory').value = '';
   document.getElementById('uploadPreview').style.display = 'none';
   document.getElementById('ocrStatus').style.display = 'none';
@@ -286,7 +321,7 @@ async function handleImageUpload(event) {
     document.getElementById('uploadPreview').src = pendingImageBase64;
     document.getElementById('uploadPreview').style.display = 'block';
     document.getElementById('uploadZone').style.display = 'none';
-    if (!settings.apiKey) { showOcrStatus('No API key — tap ⚙️ to add your OpenAI key. You can type the recipe manually below.', true); return; }
+    if (!settings.apiKey) { showOcrStatus('No API key — tap ⚙️ to add your OpenAI key.', true); return; }
     showOcrStatus('📖 Reading your recipe…', false);
     document.getElementById('saveBtn').disabled = true;
     try {
@@ -294,7 +329,7 @@ async function handleImageUpload(event) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + settings.apiKey },
         body: JSON.stringify({ model: 'gpt-4o', max_tokens: 1500, messages: [{ role: 'user', content: [
-          { type: 'text', text: 'Read this recipe image and extract the recipe name and full text including all ingredients and instructions. Respond ONLY in this JSON format with no markdown: {"name":"...","text":"..."}' },
+          { type: 'text', text: 'Read this recipe image. Extract the recipe name, full ingredients and instructions, prep time, and cook time. Respond ONLY in this exact JSON format with no markdown: {"name":"...","text":"...","prepTime":"...","cookTime":"..."} — if prep or cook time are not found leave them as empty strings.' },
           { type: 'image_url', image_url: { url: pendingImageBase64, detail: 'high' } }
         ]}]})
       });
@@ -303,6 +338,8 @@ async function handleImageUpload(event) {
       const parsed = JSON.parse(data.choices[0].message.content.trim().replace(/```json|```/g,'').trim());
       document.getElementById('recipeName').value = parsed.name || '';
       document.getElementById('recipeText').value = parsed.text || '';
+      document.getElementById('recipePrepTime').value = parsed.prepTime || '';
+      document.getElementById('recipeCookTime').value = parsed.cookTime || '';
       showOcrStatus('✅ Recipe scanned! Review and tap Save.', false);
     } catch(err) {
       showOcrStatus('❌ Could not read photo: ' + err.message + '. Please type the recipe below.', true);
@@ -326,7 +363,8 @@ async function saveRecipe() {
     await addDoc(collection(window._db, 'recipes'), {
       name,
       category: document.getElementById('recipeCategory').value,
-      time: document.getElementById('recipeTime').value.trim(),
+      prepTime: document.getElementById('recipePrepTime').value.trim(),
+      cookTime: document.getElementById('recipeCookTime').value.trim(),
       text: document.getElementById('recipeText').value.trim(),
       image: pendingImageBase64 || null,
       created: new Date().toISOString()
@@ -342,14 +380,60 @@ function openDetail(id) {
   document.getElementById('detailHeaderTitle').textContent = r.name||'Recipe';
   document.getElementById('detailCategory').textContent = r.category||'';
   document.getElementById('detailTitle').textContent = r.name||'Untitled';
-  document.getElementById('detailMeta').innerHTML =
-    (r.time?'<div class="meta-item"><strong>Time</strong>' + r.time + '</div>':'') +
-    '<div class="meta-item"><strong>Added</strong>' + new Date(r.created).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) + '</div>';
+  let metaHtml = '';
+  if (r.prepTime) metaHtml += '<div class="meta-item"><strong>Prep</strong>' + r.prepTime + '</div>';
+  if (r.cookTime) metaHtml += '<div class="meta-item"><strong>Cook</strong>' + r.cookTime + '</div>';
+  metaHtml += '<div class="meta-item"><strong>Added</strong>' + new Date(r.created).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) + '</div>';
+  document.getElementById('detailMeta').innerHTML = metaHtml;
   document.getElementById('detailContent').textContent = r.text||'No details saved.';
   const img = document.getElementById('detailImg'), ph = document.getElementById('detailPlaceholder');
   if (r.image) { img.src = r.image; img.style.display = 'block'; ph.style.display = 'none'; }
   else { img.style.display = 'none'; ph.style.display = 'flex'; }
   document.getElementById('detailOverlay').classList.add('open');
+}
+
+function printCurrentRecipe() {
+  const r = recipes.find(x => x.id === currentRecipeId);
+  if (!r) return;
+  const win = window.open('', '_blank');
+  win.document.write('<html><head><title>' + r.name + '</title><style>body{font-family:Georgia,serif;max-width:700px;margin:2rem auto;padding:1rem;color:#2a1a0e;}h1{font-size:2rem;margin-bottom:0.5rem;}img{max-width:100%;border-radius:8px;margin-bottom:1rem;}.meta{font-size:0.85rem;color:#7A5C46;margin-bottom:1.5rem;border-bottom:1px solid #E8E0D4;padding-bottom:0.75rem;}.category{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:#C4603A;margin-bottom:4px;}.content{font-size:0.95rem;line-height:1.8;white-space:pre-wrap;}</style></head><body>');
+  win.document.write('<div class="category">' + (r.category||'') + '</div>');
+  win.document.write('<h1>' + r.name + '</h1>');
+  win.document.write('<div class="meta">');
+  if (r.prepTime) win.document.write('Prep: ' + r.prepTime + '&nbsp;&nbsp;');
+  if (r.cookTime) win.document.write('Cook: ' + r.cookTime + '&nbsp;&nbsp;');
+  win.document.write('Added: ' + new Date(r.created).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}));
+  win.document.write('</div>');
+  if (r.image) win.document.write('<img src="' + r.image + '">');
+  win.document.write('<div class="content">' + (r.text||'').replace(/</g,'&lt;') + '</div>');
+  win.document.write('</body></html>');
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 500);
+}
+
+function exportAllRecipes() {
+  if (recipes.length === 0) { showToast('No recipes to export yet.'); return; }
+  const win = window.open('', '_blank');
+  win.document.write('<html><head><title>My Recipe Box</title><style>body{font-family:Georgia,serif;max-width:750px;margin:2rem auto;padding:1rem;color:#2a1a0e;}h1{font-size:2.5rem;text-align:center;margin-bottom:0.25rem;color:#4A3728;}h1+p{text-align:center;color:#9A8878;font-size:0.9rem;margin-bottom:2rem;border-bottom:2px solid #E8E0D4;padding-bottom:1rem;}.recipe{margin-bottom:3rem;page-break-inside:avoid;border-bottom:1px solid #E8E0D4;padding-bottom:2rem;}.category{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:#C4603A;margin-bottom:4px;}.recipe h2{font-size:1.5rem;margin-bottom:0.4rem;}.meta{font-size:0.82rem;color:#7A5C46;margin-bottom:1rem;}.content{font-size:0.9rem;line-height:1.8;white-space:pre-wrap;}img{max-width:280px;border-radius:8px;margin-bottom:1rem;float:right;margin-left:1.5rem;}</style></head><body>');
+  win.document.write('<h1>My Recipe Box</h1>');
+  win.document.write('<p>' + recipes.length + ' recipes — printed ' + new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) + '</p>');
+  recipes.forEach(r => {
+    win.document.write('<div class="recipe">');
+    win.document.write('<div class="category">' + (r.category||'Uncategorized') + '</div>');
+    win.document.write('<h2>' + r.name + '</h2>');
+    win.document.write('<div class="meta">');
+    if (r.prepTime) win.document.write('Prep: ' + r.prepTime + '&nbsp;&nbsp;');
+    if (r.cookTime) win.document.write('Cook: ' + r.cookTime + '&nbsp;&nbsp;');
+    win.document.write('</div>');
+    if (r.image) win.document.write('<img src="' + r.image + '">');
+    win.document.write('<div class="content">' + (r.text||'').replace(/</g,'&lt;') + '</div>');
+    win.document.write('<div style="clear:both"></div></div>');
+  });
+  win.document.write('</body></html>');
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 600);
 }
 
 async function deleteCurrentRecipe() {
