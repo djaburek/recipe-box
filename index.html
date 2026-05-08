@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Recipe Box</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #FAF7F2; --warm-white: #FFFEF9; --brown: #4A3728; --brown-light: #7A5C46;
+    --brown-mid: #6B4C3B; --accent: #C4603A; --accent-light: #F2E8E2; --accent-hover: #A84F2F;
+    --green: #4A6741; --green-light: #E8F0E7; --border: #E8E0D4; --text-muted: #9A8878;
+    --shadow-lg: 0 8px 32px rgba(74,55,40,0.12);
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--brown); min-height: 100vh; }
+  .header { background: var(--brown); padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .header h1 { font-family: 'Playfair Display', serif; color: var(--cream); font-size: 1.5rem; font-weight: 600; }
+  .header-actions { display: flex; gap: 8px; }
+  .icon-btn { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: var(--cream); width: 38px; height: 38px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: background 0.15s; }
+  .icon-btn:hover { background: rgba(255,255,255,0.2); }
+  .main { max-width: 800px; margin: 0 auto; padding: 1.25rem 1rem 6rem; }
+  .search-wrap { position: relative; margin-bottom: 1rem; }
+  .search-wrap input { width: 100%; padding: 0.75rem 1rem 0.75rem 2.75rem; border: 1.5px solid var(--border); border-radius: 12px; background: var(--warm-white); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--brown); outline: none; transition: border-color 0.15s; }
+  .search-wrap input:focus { border-color: var(--brown-light); }
+  .search-wrap input::placeholder { color: var(--text-muted); }
+  .search-icon { position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .chip { padding: 5px 14px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--warm-white); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; color: var(--brown-light); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .chip:hover { border-color: var(--brown-light); }
+  .chip.active { background: var(--brown); border-color: var(--brown); color: var(--cream); }
+  .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+  .recipe-card { background: var(--warm-white); border-radius: 14px; border: 1.5px solid var(--border); overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+  .recipe-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .card-img { width: 100%; height: 140px; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: var(--accent); overflow: hidden; }
+  .card-img img { width: 100%; height: 100%; object-fit: cover; }
+  .card-body { padding: 0.85rem 1rem; }
+  .card-category { font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 4px; }
+  .card-title { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; color: var(--brown); line-height: 1.3; margin-bottom: 6px; }
+  .card-meta { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 10px; flex-wrap: wrap; }
+  .empty { text-align: center; padding: 4rem 1rem; color: var(--text-muted); grid-column: 1/-1; }
+  .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .empty h3 { font-family: 'Playfair Display', serif; color: var(--brown-light); margin-bottom: 0.5rem; font-size: 1.25rem; }
+  .empty p { font-size: 0.9rem; line-height: 1.6; }
+  .loading { text-align: center; padding: 3rem 1rem; color: var(--text-muted); grid-column: 1/-1; font-size: 0.9rem; }
+  .fab { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--accent); color: white; border: none; border-radius: 50px; padding: 0.85rem 1.5rem; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(196,96,58,0.35); transition: background 0.15s, transform 0.15s; z-index: 50; }
+  .fab:hover { background: var(--accent-hover); transform: scale(1.03); }
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(40,28,20,0.6); z-index: 200; align-items: flex-end; justify-content: center; }
+  .overlay.open { display: flex; }
+  .sheet { background: var(--warm-white); border-radius: 20px 20px 0 0; width: 100%; max-width: 680px; max-height: 92vh; overflow-y: auto; padding: 0 0 2rem; animation: slideUp 0.25s ease; }
+  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0.85rem auto 1.25rem; }
+  .sheet-header { padding: 0 1.25rem 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .sheet-header h2 { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--brown); }
+  .close-btn { background: var(--border); border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 1rem; cursor: pointer; color: var(--brown-light); display: flex; align-items: center; justify-content: center; }
+  .form-body { padding: 1.25rem; }
+  .upload-zone { border: 2px dashed var(--border); border-radius: 14px; padding: 2rem 1rem; text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; margin-bottom: 1.25rem; position: relative; overflow: hidden; }
+  .upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
+  .upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0; }
+  .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .upload-zone p { font-size: 0.9rem; color: var(--text-muted); }
+  .upload-zone strong { color: var(--accent); }
+  .upload-preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; display: none; margin-bottom: 1rem; }
+  .form-row { margin-bottom: 1rem; }
+  .form-row label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--brown-light); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+  .form-row input, .form-row select, .form-row textarea { width: 100%; padding: 0.7rem 0.9rem; border: 1.5px solid var(--border); border-radius: 10px; background: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--brown); outline: none; transition: border-color 0.15s; }
+  .form-row input:focus, .form-row select:focus, .form-row textarea:focus { border-color: var(--brown-light); }
+  .form-row textarea { min-height: 120px; resize: vertical; }
+  .ocr-status { background: var(--green-light); color: var(--green); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.85rem; margin-bottom: 1rem; display: none; line-height: 1.5; }
+  .ocr-status.error { background: #FDE8E2; color: #8B3018; }
+  .btn-primary { width: 100%; padding: 0.85rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 500; cursor: pointer; transition: background 0.15s; margin-top: 0.5rem; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-primary:disabled { background: var(--text-muted); cursor: not-allowed; }
+  .settings-row { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); }
+  .settings-row label { font-size: 0.8rem; font-weight: 500; color: var(--brown-light); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 5px; }
+  .settings-row input { width: 100%; padding: 0.7rem 0.9rem; border: 1.5px solid var(--border); border-radius: 10px; background: var(--cream); font-family: monospace; font-size: 0.85rem; color: var(--brown); outline: none; }
+  .settings-row input:focus { border-color: var(--brown-light); }
+  .settings-note { font-size: 0.78rem; color: var(--text-muted); margin-top: 5px; line-height: 1.5; }
+  .save-settings-btn { margin: 1.25rem; width: calc(100% - 2.5rem); padding: 0.8rem; background: var(--brown); color: var(--cream); border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+  .save-settings-btn:hover { background: var(--brown-mid); }
+  .detail-img { width: 100%; height: 220px; object-fit: cover; display: none; }
+  .detail-img-placeholder { width: 100%; height: 140px; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+  .detail-body { padding: 1.25rem; }
+  .detail-category { font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 4px; }
+  .detail-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 600; color: var(--brown); margin-bottom: 0.75rem; line-height: 1.3; }
+  .detail-meta { display: flex; gap: 1.25rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .meta-item { font-size: 0.82rem; color: var(--text-muted); }
+  .meta-item strong { color: var(--brown-light); display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .detail-content { background: var(--cream); border-radius: 12px; padding: 1rem; font-size: 0.9rem; line-height: 1.7; color: var(--brown); white-space: pre-wrap; word-break: break-word; }
+  .detail-actions { display: flex; gap: 8px; margin-top: 1rem; }
+  .btn-danger { flex: 1; padding: 0.75rem; background: #FDE8E2; color: #8B3018; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; }
+  .btn-secondary { flex: 1; padding: 0.75rem; background: var(--cream); color: var(--brown-light); border: 1.5px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; }
+  .count-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+  #toast { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%); background: var(--brown); color: var(--cream); padding: 0.65rem 1.25rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500; z-index: 999; transition: opacity 0.3s; font-family: 'DM Sans', sans-serif; opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🍳 My Recipe Box</h1>
+  <div class="header-actions">
+    <button class="icon-btn" onclick="openSettings()" title="Settings">⚙️</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Search recipes, ingredients, keywords…" oninput="renderRecipes()">
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="count-label" id="countLabel"></div>
+  <div class="recipe-grid" id="recipeGrid"><div class="loading">Loading recipes…</div></div>
+</div>
+
+<button class="fab" onclick="openAdd()">📷 Add Recipe</button>
+<div id="toast"></div>
+
+<!-- ADD RECIPE -->
+<div class="overlay" id="addOverlay" onclick="closeIfBg(event,'addOverlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <h2>Add New Recipe</h2>
+      <button class="close-btn" onclick="closeOverlay('addOverlay')">✕</button>
+    </div>
+    <div class="form-body">
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" accept="image/*" capture="environment" onchange="handleImageUpload(event)" id="fileInput">
+        <div class="upload-icon">📸</div>
+        <p><strong>Take a photo or upload</strong></p>
+        <p>Tap to snap or choose a recipe image</p>
+      </div>
+      <img class="upload-preview" id="uploadPreview">
+      <div class="ocr-status" id="ocrStatus"></div>
+      <div class="form-row">
+        <label>Recipe Name</label>
+        <input type="text" id="recipeName" placeholder="e.g. Grandma's Lasagna">
+      </div>
+      <div class="form-row">
+        <label>Category</label>
+        <select id="recipeCategory">
+          <option value="">— Select —</option>
+          <option>Breakfast</option><option>Lunch</option><option>Dinner</option>
+          <option>Desserts</option><option>Snacks</option><option>Soups & Salads</option>
+          <option>Sides</option><option>Drinks</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Prep / Cook Time (optional)</label>
+        <input type="text" id="recipeTime" placeholder="e.g. 30 min prep, 1 hr cook">
+      </div>
+      <div class="form-row">
+        <label>Full Recipe Text</label>
+        <textarea id="recipeText" placeholder="Auto-filled from your photo. You can also type or edit here."></textarea>
+      </div>
+      <button class="btn-primary" id="saveBtn" onclick="saveRecipe()">Save Recipe</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL -->
+<div class="overlay" id="detailOverlay" onclick="closeIfBg(event,'detailOverlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <h2 id="detailHeaderTitle">Recipe</h2>
+      <button class="close-btn" onclick="closeOverlay('detailOverlay')">✕</button>
+    </div>
+    <div class="detail-img-placeholder" id="detailPlaceholder">🍽️</div>
+    <img class="detail-img" id="detailImg">
+    <div class="detail-body">
+      <div class="detail-category" id="detailCategory"></div>
+      <div class="detail-title" id="detailTitle"></div>
+      <div class="detail-meta" id="detailMeta"></div>
+      <div class="detail-content" id="detailContent"></div>
+      <div class="detail-actions">
+        <button class="btn-secondary" onclick="closeOverlay('detailOverlay')">Close</button>
+        <button class="btn-danger" onclick="deleteCurrentRecipe()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="overlay" id="settingsOverlay" onclick="closeIfBg(event,'settingsOverlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <h2>Settings</h2>
+      <button class="close-btn" onclick="closeOverlay('settingsOverlay')">✕</button>
+    </div>
+    <div class="settings-row">
+      <label>OpenAI API Key</label>
+      <input type="password" id="apiKeyInput" placeholder="sk-proj-…">
+      <p class="settings-note">Only needed on the device used to scan recipe photos. Stored on this device only — never shared with anyone.</p>
+    </div>
+    <div class="settings-row">
+      <label>Total Recipes</label>
+      <p id="recipeCount" style="font-size:0.9rem;color:var(--brown-light);margin-top:4px;">Loading…</p>
+    </div>
+    <button class="save-settings-btn" onclick="saveSettings()">Save Settings</button>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getFirestore, collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  import { getStorage, ref, uploadString, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+
+  const app = initializeApp({
+    apiKey: "AIzaSyAFvzgWV7NLw63SdmDH8O85mTb3zR61nZI",
+    authDomain: "my-recipe-box-82364.firebaseapp.com",
+    projectId: "my-recipe-box-82364",
+    storageBucket: "my-recipe-box-82364.firebasestorage.app",
+    messagingSenderId: "48539697649",
+    appId: "1:48539697649:web:fb9709f360d6ae4aaec450"
+  });
+
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+  window._db = db;
+  window._storage = storage;
+  window._fb = { collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot, ref, uploadString, getDownloadURL, deleteObject };
+  window.firebaseReady = true;
+  window.dispatchEvent(new Event('firebaseReady'));
+</script>
+
+<script>
+const SETTINGS_KEY = 'recipeBox_settings';
+let recipes = [], settings = { apiKey: '' }, currentRecipeId = null, activeFilter = 'All', pendingImageBase64 = null;
+
+function loadSettings() {
+  try { settings = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || { apiKey: '' }; } catch(e) { settings = { apiKey: '' }; }
+}
+
+function saveSettings() {
+  settings.apiKey = document.getElementById('apiKeyInput').value.trim();
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  closeOverlay('settingsOverlay');
+  showToast('Settings saved!');
+}
+
+function initFirestore() {
+  const { collection, query, orderBy, onSnapshot } = window._fb;
+  onSnapshot(query(collection(window._db, 'recipes'), orderBy('created', 'desc')), (snap) => {
+    recipes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderChips(); renderRecipes();
+  }, (err) => { console.error(err); showToast('Connection error — check your internet.'); });
+}
+
+function renderChips() {
+  const cats = ['All', ...new Set(recipes.map(r => r.category).filter(Boolean))];
+  document.getElementById('chips').innerHTML = cats.map(c =>
+    `<button class="chip${activeFilter===c?' active':''}" onclick="setFilter('${c}')">${c}</button>`).join('');
+}
+
+function setFilter(cat) { activeFilter = cat; renderChips(); renderRecipes(); }
+
+function getFiltered() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  return recipes.filter(r => {
+    if (activeFilter !== 'All' && r.category !== activeFilter) return false;
+    if (!q) return true;
+    return (r.name||'').toLowerCase().includes(q) || (r.text||'').toLowerCase().includes(q) ||
+           (r.category||'').toLowerCase().includes(q) || (r.time||'').toLowerCase().includes(q);
+  });
+}
+
+function renderRecipes() {
+  const filtered = getFiltered();
+  const grid = document.getElementById('recipeGrid');
+  document.getElementById('countLabel').textContent = `${filtered.length} recipe${filtered.length!==1?'s':''}`;
+  document.getElementById('recipeCount').textContent = `${recipes.length} recipe${recipes.length!==1?'s':''}`;
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">📖</div>
+      <h3>${recipes.length===0?'Your recipe box is empty':'No recipes found'}</h3>
+      <p>${recipes.length===0?'Tap the button below to add your first recipe.':'Try a different search or filter.'}</p></div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(r => `
+    <div class="recipe-card" onclick="openDetail('${r.id}')">
+      <div class="card-img">${r.imageUrl?`<img src="${r.imageUrl}" alt="${r.name}" loading="lazy">`:'🍽️'}</div>
+      <div class="card-body">
+        <div class="card-category">${r.category||'Uncategorized'}</div>
+        <div class="card-title">${r.name||'Untitled Recipe'}</div>
+        <div class="card-meta">${r.time?`<span>⏱ ${r.time}</span>`:''}<span>${new Date(r.created).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span></div>
+      </div>
+    </div>`).join('');
+}
+
+function openAdd() {
+  ['recipeName','recipeTime','recipeText'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('recipeCategory').value = '';
+  document.getElementById('uploadPreview').style.display = 'none';
+  document.getElementById('ocrStatus').style.display = 'none';
+  document.getElementById('uploadZone').style.display = 'block';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('saveBtn').disabled = false;
+  document.getElementById('saveBtn').textContent = 'Save Recipe';
+  pendingImageBase64 = null;
+  document.getElementById('addOverlay').classList.add('open');
+}
+
+async function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    pendingImageBase64 = e.target.result;
+    document.getElementById('uploadPreview').src = pendingImageBase64;
+    document.getElementById('uploadPreview').style.display = 'block';
+    document.getElementById('uploadZone').style.display = 'none';
+    if (!settings.apiKey) { showOcrStatus('No API key set — tap ⚙️ to add your OpenAI key. You can type the recipe below manually.', true); return; }
+    showOcrStatus('📖 Reading your recipe… a few seconds…', false);
+    document.getElementById('saveBtn').disabled = true;
+    try {
+      const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${settings.apiKey}` },
+        body: JSON.stringify({ model: 'gpt-4o', max_tokens: 1500, messages: [{ role: 'user', content: [
+          { type: 'text', text: 'Read this recipe image and extract the recipe name and full text including all ingredients and instructions. Respond ONLY in this JSON format with no markdown: {"name":"...","text":"..."}' },
+          { type: 'image_url', image_url: { url: pendingImageBase64, detail: 'high' } }
+        ]}]})
+      });
+      if (!resp.ok) { const e = await resp.json(); throw new Error(e.error?.message||'API error'); }
+      const data = await resp.json();
+      const parsed = JSON.parse(data.choices[0].message.content.trim().replace(/```json|```/g,'').trim());
+      document.getElementById('recipeName').value = parsed.name || '';
+      document.getElementById('recipeText').value = parsed.text || '';
+      showOcrStatus('✅ Recipe scanned! Review and tap Save.', false);
+    } catch(err) {
+      showOcrStatus(`❌ Could not read photo: ${err.message}. Please type the recipe below.`, true);
+    } finally { document.getElementById('saveBtn').disabled = false; }
+  };
+  reader.readAsDataURL(file);
+}
+
+function showOcrStatus(msg, isError) {
+  const el = document.getElementById('ocrStatus');
+  el.textContent = msg; el.className = 'ocr-status'+(isError?' error':''); el.style.display = 'block';
+}
+
+async function saveRecipe() {
+  const name = document.getElementById('recipeName').value.trim();
+  if (!name) { alert('Please enter a recipe name.'); return; }
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    let imageUrl = null;
+    if (pendingImageBase64) {
+      showOcrStatus('📤 Uploading photo…', false);
+      const { ref, uploadString, getDownloadURL } = window._fb;
+      const sRef = ref(window._storage, `recipes/${Date.now()}.jpg`);
+      await uploadString(sRef, pendingImageBase64, 'data_url');
+      imageUrl = await getDownloadURL(sRef);
+    }
+    const { collection, addDoc } = window._fb;
+    await addDoc(collection(window._db, 'recipes'), {
+      name, category: document.getElementById('recipeCategory').value,
+      time: document.getElementById('recipeTime').value.trim(),
+      text: document.getElementById('recipeText').value.trim(),
+      imageUrl, created: new Date().toISOString()
+    });
+    closeOverlay('addOverlay'); showToast('Recipe saved! 🎉');
+  } catch(err) { alert('Could not save: ' + err.message); btn.disabled = false; btn.textContent = 'Save Recipe'; }
+}
+
+function openDetail(id) {
+  const r = recipes.find(x => x.id === id);
+  if (!r) return;
+  currentRecipeId = id;
+  document.getElementById('detailHeaderTitle').textContent = r.name||'Recipe';
+  document.getElementById('detailCategory').textContent = r.category||'';
+  document.getElementById('detailTitle').textContent = r.name||'Untitled';
+  document.getElementById('detailMeta').innerHTML =
+    (r.time?`<div class="meta-item"><strong>Time</strong>${r.time}</div>`:'') +
+    `<div class="meta-item"><strong>Added</strong>${new Date(r.created).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div>`;
+  document.getElementById('detailContent').textContent = r.text||'No details saved.';
+  const img = document.getElementById('detailImg'), ph = document.getElementById('detailPlaceholder');
+  if (r.imageUrl) { img.src = r.imageUrl; img.style.display = 'block'; ph.style.display = 'none'; }
+  else { img.style.display = 'none'; ph.style.display = 'flex'; }
+  document.getElementById('detailOverlay').classList.add('open');
+}
+
+async function deleteCurrentRecipe() {
+  if (!confirm('Delete this recipe? This cannot be undone.')) return;
+  try {
+    const r = recipes.find(x => x.id === currentRecipeId);
+    if (r?.imageUrl) { try { const { ref, deleteObject } = window._fb; await deleteObject(ref(window._storage, r.imageUrl)); } catch(e) {} }
+    const { deleteDoc, doc } = window._fb;
+    await deleteDoc(doc(window._db, 'recipes', currentRecipeId));
+    closeOverlay('detailOverlay'); showToast('Recipe deleted.');
+  } catch(err) { alert('Could not delete: ' + err.message); }
+}
+
+function openSettings() {
+  document.getElementById('apiKeyInput').value = settings.apiKey||'';
+  document.getElementById('recipeCount').textContent = `${recipes.length} recipe${recipes.length!==1?'s':''}`;
+  document.getElementById('settingsOverlay').classList.add('open');
+}
+
+function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
+function closeIfBg(e, id) { if (e.target.id === id) closeOverlay(id); }
+
+let toastTimeout;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.opacity = '1';
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.style.opacity = '0', 2800);
+}
+
+loadSettings();
+window.addEventListener('firebaseReady', initFirestore);
+if (window.firebaseReady) initFirestore();
+</script>
+</body>
+</html>
