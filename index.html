@@ -65,7 +65,12 @@
   .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
   .upload-zone p { font-size: 0.9rem; color: var(--text-muted); }
   .upload-zone strong { color: var(--accent); }
-  .upload-preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; display: none; margin-bottom: 1rem; }
+  .upload-preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; display: none; margin-bottom: 0.75rem; }
+  .page2-zone { border: 2px dashed var(--border); border-radius: 14px; padding: 1.25rem 1rem; text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; margin-bottom: 1rem; position: relative; overflow: hidden; display: none; background: var(--bg); }
+  .page2-zone:hover { border-color: var(--accent); background: var(--accent-light); }
+  .page2-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0; }
+  .page2-preview { width: 100%; max-height: 160px; object-fit: cover; border-radius: 10px; display: none; margin-bottom: 0.75rem; }
+  .scan-more-btn { width: 100%; padding: 0.7rem; background: var(--accent-light); color: var(--accent); border: 1.5px dashed var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; margin-bottom: 1rem; display: none; }
   .form-row { margin-bottom: 1rem; }
   .form-row label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
   .form-row input, .form-row select, .form-row textarea { width: 100%; padding: 0.7rem 0.9rem; border: 1.5px solid var(--border); border-radius: 10px; background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--text); outline: none; transition: border-color 0.15s; }
@@ -140,17 +145,25 @@
 <div id="toast"></div>
 
 <div class="overlay" id="addOverlay" onclick="closeIfBg(event,'addOverlay')">
-  <div class="sheet">
+  <div class="sheet" id="addSheet">
     <div class="sheet-handle"></div>
     <div class="sheet-header"><h2 id="addTitle">Add New Recipe</h2><button class="close-btn" onclick="closeOverlay('addOverlay')">✕</button></div>
     <div class="form-body">
       <div class="upload-zone" id="uploadZone">
-        <input type="file" accept="image/*" capture="environment" onchange="handleImageUpload(event)" id="fileInput">
+        <input type="file" accept="image/*" capture="environment" onchange="handleImageUpload(event,'page1')" id="fileInput">
         <div class="upload-icon">📸</div>
         <p><strong>Take a photo or upload</strong></p>
-        <p>Tap to snap or choose a recipe image</p>
+        <p>Tap to snap page 1 of your recipe</p>
       </div>
       <img class="upload-preview" id="uploadPreview">
+      <button class="scan-more-btn" id="scanPage2Btn" onclick="showPage2Zone()">📄 Scan Page 2 (optional)</button>
+      <div class="page2-zone" id="page2Zone">
+        <input type="file" accept="image/*" capture="environment" onchange="handleImageUpload(event,'page2')" id="fileInput2">
+        <div class="upload-icon" style="font-size:1.5rem;">📄</div>
+        <p><strong>Scan page 2</strong></p>
+        <p style="font-size:0.8rem;">Text will be added to the recipe</p>
+      </div>
+      <img class="page2-preview" id="page2Preview">
       <div class="ocr-status" id="ocrStatus"></div>
       <div class="form-row"><label>Recipe Name</label><input type="text" id="recipeName" placeholder="e.g. Grandma's Lasagna"></div>
       <div class="form-row"><label>Category</label>
@@ -342,13 +355,83 @@ function openAdd() {
   document.getElementById('recipeCategory').value = '';
   document.getElementById('recipeDifficulty').value = '';
   document.getElementById('uploadPreview').style.display = 'none';
+  document.getElementById('page2Preview').style.display = 'none';
   document.getElementById('ocrStatus').style.display = 'none';
   document.getElementById('uploadZone').style.display = 'block';
+  document.getElementById('page2Zone').style.display = 'none';
+  document.getElementById('scanPage2Btn').style.display = 'none';
   document.getElementById('fileInput').value = '';
+  document.getElementById('fileInput2').value = '';
   document.getElementById('saveBtn').disabled = false;
   document.getElementById('saveBtn').textContent = 'Save Recipe';
   pendingImageBase64 = null;
   document.getElementById('addOverlay').classList.add('open');
+  setTimeout(() => { document.getElementById('addSheet').scrollTop = 0; }, 50);
+}
+
+function showPage2Zone() {
+  document.getElementById('page2Zone').style.display = 'block';
+  document.getElementById('scanPage2Btn').style.display = 'none';
+  setTimeout(() => { document.getElementById('page2Zone').scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+}
+
+async function handleImageUpload(event, page) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const compressed = await compressImage(e.target.result);
+    if (page === 'page1') {
+      pendingImageBase64 = compressed;
+      document.getElementById('uploadPreview').src = compressed;
+      document.getElementById('uploadPreview').style.display = 'block';
+      document.getElementById('uploadZone').style.display = 'none';
+    } else {
+      document.getElementById('page2Preview').src = compressed;
+      document.getElementById('page2Preview').style.display = 'block';
+      document.getElementById('page2Zone').style.display = 'none';
+    }
+    if (!settings.apiKey) { showOcrStatus('No API key — tap ⚙️ to add your OpenAI key.', true); return; }
+    const isPage2 = page === 'page2';
+    showOcrStatus(isPage2 ? '📖 Reading page 2…' : '📖 Reading your recipe…', false);
+    document.getElementById('saveBtn').disabled = true;
+    try {
+      const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + settings.apiKey },
+        body: JSON.stringify({ model: 'gpt-4o', max_tokens: 1800, messages: [{ role: 'user', content: [
+          { type: 'text', text: isPage2
+            ? 'This is page 2 of a recipe. Extract ONLY the recipe text from this page (ingredients and/or instructions). Return ONLY a JSON object with no markdown: {"text":"..."}'
+            : 'You are reading a printed or typed recipe. Extract: name (recipe title), text (full ingredients and instructions), time (prep and cook time as short string like "20 min prep / 45 min cook", empty string if not found), servings (like "4 servings", empty string if not found). Return ONLY a JSON object with no markdown: {"name":"...","text":"...","time":"...","servings":"..."}' },
+          { type: 'image_url', image_url: { url: compressed, detail: 'high' } }
+        ]}]})
+      });
+      if (!resp.ok) { const e = await resp.json(); throw new Error(e.error?.message||'API error'); }
+      const data = await resp.json();
+      const raw = data.choices[0].message.content.trim().replace(/```json|```/g,'').trim();
+      const parsed = JSON.parse(raw);
+      if (isPage2) {
+        const existing = document.getElementById('recipeText').value.trim();
+        document.getElementById('recipeText').value = existing + (existing ? '\n\n--- Page 2 ---\n\n' : '') + (parsed.text||'');
+        showOcrStatus('✅ Page 2 added! Review the combined recipe below.', false);
+      } else {
+        document.getElementById('recipeName').value = parsed.name || '';
+        document.getElementById('recipeText').value = parsed.text || '';
+        document.getElementById('recipeTime').value = parsed.time || '';
+        document.getElementById('recipeServings').value = parsed.servings || '';
+        document.getElementById('scanPage2Btn').style.display = 'block';
+        showOcrStatus('✅ Page 1 scanned! Need a page 2? Tap below.', false);
+      }
+    } catch(err) {
+      showOcrStatus('❌ Could not read photo: ' + err.message, true);
+    } finally { document.getElementById('saveBtn').disabled = false; }
+  };
+  reader.readAsDataURL(file);
+}
+
+function showOcrStatus(msg, isError) {
+  const el = document.getElementById('ocrStatus');
+  el.textContent = msg; el.className = 'ocr-status'+(isError?' error':''); el.style.display = 'block';
 }
 
 function openEdit() {
@@ -364,6 +447,9 @@ function openEdit() {
   document.getElementById('recipeSource').value = r.source||'';
   document.getElementById('recipeText').value = r.text||'';
   document.getElementById('recipeNotes').value = r.notes||'';
+  document.getElementById('scanPage2Btn').style.display = 'none';
+  document.getElementById('page2Zone').style.display = 'none';
+  document.getElementById('page2Preview').style.display = 'none';
   if (r.image) {
     pendingImageBase64 = r.image;
     document.getElementById('uploadPreview').src = r.image;
@@ -379,49 +465,7 @@ function openEdit() {
   document.getElementById('saveBtn').textContent = 'Update Recipe';
   closeOverlay('detailOverlay');
   document.getElementById('addOverlay').classList.add('open');
-}
-
-async function handleImageUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    showOcrStatus('🗜️ Compressing photo…', false);
-    pendingImageBase64 = await compressImage(e.target.result);
-    document.getElementById('uploadPreview').src = pendingImageBase64;
-    document.getElementById('uploadPreview').style.display = 'block';
-    document.getElementById('uploadZone').style.display = 'none';
-    if (!settings.apiKey) { showOcrStatus('No API key — tap ⚙️ to add your OpenAI key.', true); return; }
-    showOcrStatus('📖 Reading your recipe…', false);
-    document.getElementById('saveBtn').disabled = true;
-    try {
-      const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + settings.apiKey },
-        body: JSON.stringify({ model: 'gpt-4o', max_tokens: 1800, messages: [{ role: 'user', content: [
-          { type: 'text', text: 'You are reading a printed or typed recipe from a photo. Extract the following and return ONLY a JSON object with no markdown, no explanation, no extra text. Fields: name (recipe title), text (full ingredients and instructions exactly as written), time (prep and cook time combined as a short string like "20 min prep / 45 min cook" — look for Prep Time and Cook Time labels on the recipe; if not found use empty string), servings (serving size or yield like "4 servings" or "makes 24 cookies" — if not found use empty string). Example output: {"name":"Chocolate Chip Cookies","text":"Ingredients:\n2 cups flour...\nInstructions:\n1. Preheat...","time":"15 min prep / 12 min cook","servings":"48 cookies"}' },
-          { type: 'image_url', image_url: { url: pendingImageBase64, detail: 'high' } }
-        ]}]})
-      });
-      if (!resp.ok) { const e = await resp.json(); throw new Error(e.error?.message||'API error'); }
-      const data = await resp.json();
-      const raw = data.choices[0].message.content.trim().replace(/```json|```/g,'').trim();
-      const parsed = JSON.parse(raw);
-      document.getElementById('recipeName').value = parsed.name || '';
-      document.getElementById('recipeText').value = parsed.text || '';
-      document.getElementById('recipeTime').value = parsed.time || '';
-      document.getElementById('recipeServings').value = parsed.servings || '';
-      showOcrStatus('✅ Recipe scanned! Review and tap Save.', false);
-    } catch(err) {
-      showOcrStatus('❌ Could not read photo: ' + err.message, true);
-    } finally { document.getElementById('saveBtn').disabled = false; }
-  };
-  reader.readAsDataURL(file);
-}
-
-function showOcrStatus(msg, isError) {
-  const el = document.getElementById('ocrStatus');
-  el.textContent = msg; el.className = 'ocr-status'+(isError?' error':''); el.style.display = 'block';
+  setTimeout(() => { document.getElementById('addSheet').scrollTop = 0; }, 50);
 }
 
 async function saveRecipe() {
@@ -531,9 +575,7 @@ function printCurrentRecipe() {
   }
   const win = window.open('', '_blank');
   win.document.write('<html><head><title>' + r.name + '</title><style>body{font-family:Georgia,serif;max-width:700px;margin:2rem auto;padding:1rem;color:#3D1020;}h1{font-size:2rem;margin-bottom:0.5rem;color:#72243E;}img{max-width:100%;border-radius:8px;margin-bottom:1rem;}.meta{font-size:0.85rem;color:#993556;margin-bottom:1.5rem;border-bottom:1px solid #F4C0D1;padding-bottom:0.75rem;}.category{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:#D4537E;margin-bottom:4px;}.content{font-size:0.95rem;line-height:1.8;white-space:pre-wrap;}.notes{background:#FFF8E1;border-radius:8px;padding:0.75rem 1rem;margin-top:1.5rem;font-size:0.88rem;color:#5D4037;}.scale-note{background:#FBEAF0;border-radius:8px;padding:0.5rem 1rem;font-size:0.82rem;color:#993556;margin-bottom:1rem;}</style></head><body>');
-  win.document.write('<div class="category">' + (r.category||'') + '</div>');
-  win.document.write('<h1>' + r.name + '</h1>');
-  win.document.write('<div class="meta">');
+  win.document.write('<div class="category">' + (r.category||'') + '</div><h1>' + r.name + '</h1><div class="meta">');
   if (r.time) win.document.write('⏱ ' + r.time + '&nbsp;&nbsp;&nbsp;');
   if (r.servings) win.document.write('🍽 ' + (scale !== 1 ? scalePrompt + ' servings (scaled from ' + r.servings + ')' : r.servings) + '&nbsp;&nbsp;&nbsp;');
   if (r.difficulty) win.document.write('📊 ' + r.difficulty + '&nbsp;&nbsp;&nbsp;');
