@@ -74,10 +74,8 @@
   .settings-row { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); }
   .settings-row label { font-size: 0.8rem; font-weight: 500; color: var(--brown-light); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 5px; }
   .settings-row input { width: 100%; padding: 0.7rem 0.9rem; border: 1.5px solid var(--border); border-radius: 10px; background: var(--cream); font-family: monospace; font-size: 0.85rem; color: var(--brown); outline: none; }
-  .settings-row input:focus { border-color: var(--brown-light); }
   .settings-note { font-size: 0.78rem; color: var(--text-muted); margin-top: 5px; line-height: 1.5; }
-  .save-settings-btn { margin: 1.25rem; width: calc(100% - 2.5rem); padding: 0.8rem; background: var(--brown); color: var(--cream); border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: background 0.15s; }
-  .save-settings-btn:hover { background: var(--brown-mid); }
+  .save-settings-btn { margin: 1.25rem; width: calc(100% - 2.5rem); padding: 0.8rem; background: var(--brown); color: var(--cream); border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; }
   .detail-img { width: 100%; height: 220px; object-fit: cover; display: none; }
   .detail-img-placeholder { width: 100%; height: 140px; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 3rem; }
   .detail-body { padding: 1.25rem; }
@@ -95,14 +93,12 @@
 </style>
 </head>
 <body>
-
 <div class="header">
-  <h1>🍳 My Recipe Box</h1>
+  <h1>My Recipe Box</h1>
   <div class="header-actions">
-    <button class="icon-btn" onclick="openSettings()" title="Settings">⚙️</button>
+    <button class="icon-btn" onclick="openSettings()">⚙️</button>
   </div>
 </div>
-
 <div class="main">
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
@@ -112,18 +108,12 @@
   <div class="count-label" id="countLabel"></div>
   <div class="recipe-grid" id="recipeGrid"><div class="loading">Loading recipes…</div></div>
 </div>
-
 <button class="fab" onclick="openAdd()">📷 Add Recipe</button>
 <div id="toast"></div>
-
-<!-- ADD RECIPE -->
 <div class="overlay" id="addOverlay" onclick="closeIfBg(event,'addOverlay')">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-header">
-      <h2>Add New Recipe</h2>
-      <button class="close-btn" onclick="closeOverlay('addOverlay')">✕</button>
-    </div>
+    <div class="sheet-header"><h2>Add New Recipe</h2><button class="close-btn" onclick="closeOverlay('addOverlay')">✕</button></div>
     <div class="form-body">
       <div class="upload-zone" id="uploadZone">
         <input type="file" accept="image/*" capture="environment" onchange="handleImageUpload(event)" id="fileInput">
@@ -133,12 +123,8 @@
       </div>
       <img class="upload-preview" id="uploadPreview">
       <div class="ocr-status" id="ocrStatus"></div>
-      <div class="form-row">
-        <label>Recipe Name</label>
-        <input type="text" id="recipeName" placeholder="e.g. Grandma's Lasagna">
-      </div>
-      <div class="form-row">
-        <label>Category</label>
+      <div class="form-row"><label>Recipe Name</label><input type="text" id="recipeName" placeholder="e.g. Grandma's Lasagna"></div>
+      <div class="form-row"><label>Category</label>
         <select id="recipeCategory">
           <option value="">— Select —</option>
           <option>Breakfast</option><option>Lunch</option><option>Dinner</option>
@@ -146,27 +132,16 @@
           <option>Sides</option><option>Drinks</option><option>Other</option>
         </select>
       </div>
-      <div class="form-row">
-        <label>Prep / Cook Time (optional)</label>
-        <input type="text" id="recipeTime" placeholder="e.g. 30 min prep, 1 hr cook">
-      </div>
-      <div class="form-row">
-        <label>Full Recipe Text</label>
-        <textarea id="recipeText" placeholder="Auto-filled from your photo. You can also type or edit here."></textarea>
-      </div>
+      <div class="form-row"><label>Prep / Cook Time (optional)</label><input type="text" id="recipeTime" placeholder="e.g. 30 min prep, 1 hr cook"></div>
+      <div class="form-row"><label>Full Recipe Text</label><textarea id="recipeText" placeholder="Auto-filled from your photo. You can also type or edit here."></textarea></div>
       <button class="btn-primary" id="saveBtn" onclick="saveRecipe()">Save Recipe</button>
     </div>
   </div>
 </div>
-
-<!-- DETAIL -->
 <div class="overlay" id="detailOverlay" onclick="closeIfBg(event,'detailOverlay')">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-header">
-      <h2 id="detailHeaderTitle">Recipe</h2>
-      <button class="close-btn" onclick="closeOverlay('detailOverlay')">✕</button>
-    </div>
+    <div class="sheet-header"><h2 id="detailHeaderTitle">Recipe</h2><button class="close-btn" onclick="closeOverlay('detailOverlay')">✕</button></div>
     <div class="detail-img-placeholder" id="detailPlaceholder">🍽️</div>
     <img class="detail-img" id="detailImg">
     <div class="detail-body">
@@ -181,19 +156,14 @@
     </div>
   </div>
 </div>
-
-<!-- SETTINGS -->
 <div class="overlay" id="settingsOverlay" onclick="closeIfBg(event,'settingsOverlay')">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-header">
-      <h2>Settings</h2>
-      <button class="close-btn" onclick="closeOverlay('settingsOverlay')">✕</button>
-    </div>
+    <div class="sheet-header"><h2>Settings</h2><button class="close-btn" onclick="closeOverlay('settingsOverlay')">✕</button></div>
     <div class="settings-row">
       <label>OpenAI API Key</label>
       <input type="password" id="apiKeyInput" placeholder="sk-proj-…">
-      <p class="settings-note">Only needed on the device used to scan recipe photos. Stored on this device only — never shared with anyone.</p>
+      <p class="settings-note">Only needed on the device used to scan photos. Stored on this device only.</p>
     </div>
     <div class="settings-row">
       <label>Total Recipes</label>
@@ -202,12 +172,9 @@
     <button class="save-settings-btn" onclick="saveSettings()">Save Settings</button>
   </div>
 </div>
-
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getFirestore, collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-  import { getStorage, ref, uploadString, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
-
   const app = initializeApp({
     apiKey: "AIzaSyAFvzgWV7NLw63SdmDH8O85mTb3zR61nZI",
     authDomain: "my-recipe-box-82364.firebaseapp.com",
@@ -216,16 +183,12 @@
     messagingSenderId: "48539697649",
     appId: "1:48539697649:web:fb9709f360d6ae4aaec450"
   });
-
   const db = getFirestore(app);
-  const storage = getStorage(app);
   window._db = db;
-  window._storage = storage;
-  window._fb = { collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot, ref, uploadString, getDownloadURL, deleteObject };
+  window._fb = { collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot };
   window.firebaseReady = true;
   window.dispatchEvent(new Event('firebaseReady'));
 </script>
-
 <script>
 const SETTINGS_KEY = 'recipeBox_settings';
 let recipes = [], settings = { apiKey: '' }, currentRecipeId = null, activeFilter = 'All', pendingImageBase64 = null;
@@ -233,12 +196,29 @@ let recipes = [], settings = { apiKey: '' }, currentRecipeId = null, activeFilte
 function loadSettings() {
   try { settings = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || { apiKey: '' }; } catch(e) { settings = { apiKey: '' }; }
 }
-
 function saveSettings() {
   settings.apiKey = document.getElementById('apiKeyInput').value.trim();
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-  closeOverlay('settingsOverlay');
-  showToast('Settings saved!');
+  closeOverlay('settingsOverlay'); showToast('Settings saved!');
+}
+
+function compressImage(dataUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 800;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.75));
+    };
+    img.src = dataUrl;
+  });
 }
 
 function initFirestore() {
@@ -246,47 +226,41 @@ function initFirestore() {
   onSnapshot(query(collection(window._db, 'recipes'), orderBy('created', 'desc')), (snap) => {
     recipes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderChips(); renderRecipes();
-  }, (err) => { console.error(err); showToast('Connection error — check your internet.'); });
+  }, (err) => { console.error(err); showToast('Connection error.'); });
 }
 
 function renderChips() {
   const cats = ['All', ...new Set(recipes.map(r => r.category).filter(Boolean))];
   document.getElementById('chips').innerHTML = cats.map(c =>
-    `<button class="chip${activeFilter===c?' active':''}" onclick="setFilter('${c}')">${c}</button>`).join('');
+    '<button class="chip' + (activeFilter===c?' active':'') + '" onclick="setFilter(\'' + c + '\')">' + c + '</button>').join('');
 }
-
 function setFilter(cat) { activeFilter = cat; renderChips(); renderRecipes(); }
-
 function getFiltered() {
   const q = document.getElementById('searchInput').value.toLowerCase().trim();
   return recipes.filter(r => {
     if (activeFilter !== 'All' && r.category !== activeFilter) return false;
     if (!q) return true;
-    return (r.name||'').toLowerCase().includes(q) || (r.text||'').toLowerCase().includes(q) ||
-           (r.category||'').toLowerCase().includes(q) || (r.time||'').toLowerCase().includes(q);
+    return (r.name||'').toLowerCase().includes(q)||(r.text||'').toLowerCase().includes(q)||
+           (r.category||'').toLowerCase().includes(q)||(r.time||'').toLowerCase().includes(q);
   });
 }
-
 function renderRecipes() {
   const filtered = getFiltered();
   const grid = document.getElementById('recipeGrid');
-  document.getElementById('countLabel').textContent = `${filtered.length} recipe${filtered.length!==1?'s':''}`;
-  document.getElementById('recipeCount').textContent = `${recipes.length} recipe${recipes.length!==1?'s':''}`;
+  document.getElementById('countLabel').textContent = filtered.length + ' recipe' + (filtered.length!==1?'s':'');
+  document.getElementById('recipeCount').textContent = recipes.length + ' recipe' + (recipes.length!==1?'s':'');
   if (filtered.length === 0) {
-    grid.innerHTML = `<div class="empty"><div class="empty-icon">📖</div>
-      <h3>${recipes.length===0?'Your recipe box is empty':'No recipes found'}</h3>
-      <p>${recipes.length===0?'Tap the button below to add your first recipe.':'Try a different search or filter.'}</p></div>`;
+    grid.innerHTML = '<div class="empty"><div class="empty-icon">📖</div><h3>' + (recipes.length===0?'Your recipe box is empty':'No recipes found') + '</h3><p>' + (recipes.length===0?'Tap the button below to add your first recipe.':'Try a different search or filter.') + '</p></div>';
     return;
   }
-  grid.innerHTML = filtered.map(r => `
-    <div class="recipe-card" onclick="openDetail('${r.id}')">
-      <div class="card-img">${r.imageUrl?`<img src="${r.imageUrl}" alt="${r.name}" loading="lazy">`:'🍽️'}</div>
-      <div class="card-body">
-        <div class="card-category">${r.category||'Uncategorized'}</div>
-        <div class="card-title">${r.name||'Untitled Recipe'}</div>
-        <div class="card-meta">${r.time?`<span>⏱ ${r.time}</span>`:''}<span>${new Date(r.created).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span></div>
-      </div>
-    </div>`).join('');
+  grid.innerHTML = filtered.map(r =>
+    '<div class="recipe-card" onclick="openDetail(\'' + r.id + '\')">' +
+    '<div class="card-img">' + (r.image?'<img src="' + r.image + '" alt="' + r.name + '" loading="lazy">':'🍽️') + '</div>' +
+    '<div class="card-body"><div class="card-category">' + (r.category||'Uncategorized') + '</div>' +
+    '<div class="card-title">' + (r.name||'Untitled Recipe') + '</div>' +
+    '<div class="card-meta">' + (r.time?'<span>⏱ ' + r.time + '</span>':'') +
+    '<span>' + new Date(r.created).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + '</span></div></div></div>'
+  ).join('');
 }
 
 function openAdd() {
@@ -307,17 +281,18 @@ async function handleImageUpload(event) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = async (e) => {
-    pendingImageBase64 = e.target.result;
+    showOcrStatus('🗜️ Compressing photo…', false);
+    pendingImageBase64 = await compressImage(e.target.result);
     document.getElementById('uploadPreview').src = pendingImageBase64;
     document.getElementById('uploadPreview').style.display = 'block';
     document.getElementById('uploadZone').style.display = 'none';
-    if (!settings.apiKey) { showOcrStatus('No API key set — tap ⚙️ to add your OpenAI key. You can type the recipe below manually.', true); return; }
-    showOcrStatus('📖 Reading your recipe… a few seconds…', false);
+    if (!settings.apiKey) { showOcrStatus('No API key — tap ⚙️ to add your OpenAI key. You can type the recipe manually below.', true); return; }
+    showOcrStatus('📖 Reading your recipe…', false);
     document.getElementById('saveBtn').disabled = true;
     try {
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${settings.apiKey}` },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + settings.apiKey },
         body: JSON.stringify({ model: 'gpt-4o', max_tokens: 1500, messages: [{ role: 'user', content: [
           { type: 'text', text: 'Read this recipe image and extract the recipe name and full text including all ingredients and instructions. Respond ONLY in this JSON format with no markdown: {"name":"...","text":"..."}' },
           { type: 'image_url', image_url: { url: pendingImageBase64, detail: 'high' } }
@@ -330,7 +305,7 @@ async function handleImageUpload(event) {
       document.getElementById('recipeText').value = parsed.text || '';
       showOcrStatus('✅ Recipe scanned! Review and tap Save.', false);
     } catch(err) {
-      showOcrStatus(`❌ Could not read photo: ${err.message}. Please type the recipe below.`, true);
+      showOcrStatus('❌ Could not read photo: ' + err.message + '. Please type the recipe below.', true);
     } finally { document.getElementById('saveBtn').disabled = false; }
   };
   reader.readAsDataURL(file);
@@ -347,20 +322,14 @@ async function saveRecipe() {
   const btn = document.getElementById('saveBtn');
   btn.disabled = true; btn.textContent = 'Saving…';
   try {
-    let imageUrl = null;
-    if (pendingImageBase64) {
-      showOcrStatus('📤 Uploading photo…', false);
-      const { ref, uploadString, getDownloadURL } = window._fb;
-      const sRef = ref(window._storage, `recipes/${Date.now()}.jpg`);
-      await uploadString(sRef, pendingImageBase64, 'data_url');
-      imageUrl = await getDownloadURL(sRef);
-    }
     const { collection, addDoc } = window._fb;
     await addDoc(collection(window._db, 'recipes'), {
-      name, category: document.getElementById('recipeCategory').value,
+      name,
+      category: document.getElementById('recipeCategory').value,
       time: document.getElementById('recipeTime').value.trim(),
       text: document.getElementById('recipeText').value.trim(),
-      imageUrl, created: new Date().toISOString()
+      image: pendingImageBase64 || null,
+      created: new Date().toISOString()
     });
     closeOverlay('addOverlay'); showToast('Recipe saved! 🎉');
   } catch(err) { alert('Could not save: ' + err.message); btn.disabled = false; btn.textContent = 'Save Recipe'; }
@@ -374,11 +343,11 @@ function openDetail(id) {
   document.getElementById('detailCategory').textContent = r.category||'';
   document.getElementById('detailTitle').textContent = r.name||'Untitled';
   document.getElementById('detailMeta').innerHTML =
-    (r.time?`<div class="meta-item"><strong>Time</strong>${r.time}</div>`:'') +
-    `<div class="meta-item"><strong>Added</strong>${new Date(r.created).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div>`;
+    (r.time?'<div class="meta-item"><strong>Time</strong>' + r.time + '</div>':'') +
+    '<div class="meta-item"><strong>Added</strong>' + new Date(r.created).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) + '</div>';
   document.getElementById('detailContent').textContent = r.text||'No details saved.';
   const img = document.getElementById('detailImg'), ph = document.getElementById('detailPlaceholder');
-  if (r.imageUrl) { img.src = r.imageUrl; img.style.display = 'block'; ph.style.display = 'none'; }
+  if (r.image) { img.src = r.image; img.style.display = 'block'; ph.style.display = 'none'; }
   else { img.style.display = 'none'; ph.style.display = 'flex'; }
   document.getElementById('detailOverlay').classList.add('open');
 }
@@ -386,8 +355,6 @@ function openDetail(id) {
 async function deleteCurrentRecipe() {
   if (!confirm('Delete this recipe? This cannot be undone.')) return;
   try {
-    const r = recipes.find(x => x.id === currentRecipeId);
-    if (r?.imageUrl) { try { const { ref, deleteObject } = window._fb; await deleteObject(ref(window._storage, r.imageUrl)); } catch(e) {} }
     const { deleteDoc, doc } = window._fb;
     await deleteDoc(doc(window._db, 'recipes', currentRecipeId));
     closeOverlay('detailOverlay'); showToast('Recipe deleted.');
@@ -396,7 +363,7 @@ async function deleteCurrentRecipe() {
 
 function openSettings() {
   document.getElementById('apiKeyInput').value = settings.apiKey||'';
-  document.getElementById('recipeCount').textContent = `${recipes.length} recipe${recipes.length!==1?'s':''}`;
+  document.getElementById('recipeCount').textContent = recipes.length + ' recipe' + (recipes.length!==1?'s':'');
   document.getElementById('settingsOverlay').classList.add('open');
 }
 
