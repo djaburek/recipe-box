@@ -10,8 +10,9 @@
   :root {
     --bg: #FDF5F8; --warm-white: #FFFAFC; --header: #72243E; --header-text: #FBEAF0;
     --accent: #993556; --accent-light: #FBEAF0; --accent-hover: #72243E;
-    --pink-mid: #D4537E; --border: #F4C0D1; --text: #3D1020; --text-light: #993556;
+    --border: #F4C0D1; --text: #3D1020; --text-light: #993556;
     --text-muted: #C47A95; --shadow-lg: 0 8px 32px rgba(114,36,62,0.12);
+    --purple: #7B4FA6; --purple-light: #F0E8F8; --purple-mid: #9B6FC4;
   }
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
   .header { background: var(--header); padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
@@ -25,14 +26,21 @@
   .search-wrap input:focus { border-color: var(--accent); }
   .search-wrap input::placeholder { color: var(--text-muted); }
   .search-icon { position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .filter-level1 { display: flex; gap: 6px; margin-bottom: 0.5rem; }
+  .filter-level2 { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.25rem; min-height: 0; }
   .chip { padding: 5px 14px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--warm-white); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; color: var(--text-light); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
   .chip:hover { border-color: var(--accent); }
-  .chip.active { background: var(--header); border-color: var(--header); color: var(--header-text); }
+  .chip.active-pink { background: var(--header); border-color: var(--header); color: var(--header-text); }
+  .chip.active-purple { background: var(--purple); border-color: var(--purple); color: white; }
+  .chip.active-sub { background: var(--accent); border-color: var(--accent); color: white; }
+  .chip-kayla { border-color: #D4B0F0; color: var(--purple); }
+  .chip-kayla:hover { border-color: var(--purple); }
   .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
   .recipe-card { background: var(--warm-white); border-radius: 14px; border: 1.5px solid var(--border); overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; position: relative; }
   .recipe-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-  .card-fav { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.85); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; z-index: 2; }
+  .card-badges { position: absolute; top: 8px; right: 8px; display: flex; flex-direction: column; gap: 4px; z-index: 2; }
+  .card-badge { background: rgba(255,255,255,0.9); border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
+  .card-badge-kayla { background: var(--purple-light); color: var(--purple); font-size: 0.75rem; font-weight: 600; border-radius: 12px; padding: 2px 7px; width: auto; height: auto; }
   .card-img { width: 100%; height: 140px; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; overflow: hidden; }
   .card-img img { width: 100%; height: 100%; object-fit: cover; }
   .card-body { padding: 0.85rem 1rem; }
@@ -100,10 +108,11 @@
   .detail-content { background: var(--bg); border-radius: 12px; padding: 1rem; font-size: 0.9rem; line-height: 1.7; color: var(--text); white-space: pre-wrap; word-break: break-word; }
   .detail-notes { background: #FFF8E1; border-radius: 12px; padding: 0.85rem 1rem; font-size: 0.88rem; line-height: 1.6; color: #5D4037; margin-top: 0.75rem; }
   .detail-notes strong { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: #8D6E63; margin-bottom: 4px; }
-  .detail-actions { display: flex; gap: 8px; margin-top: 1rem; flex-wrap: wrap; }
-  .btn-action { flex: 1; padding: 0.75rem; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500; cursor: pointer; min-width: 70px; text-align: center; }
+  .detail-actions { display: flex; gap: 6px; margin-top: 1rem; flex-wrap: wrap; }
+  .btn-action { flex: 1; padding: 0.7rem 0.5rem; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; cursor: pointer; min-width: 60px; text-align: center; }
   .btn-close { background: var(--bg); color: var(--text-light); border: 1.5px solid var(--border); }
   .btn-fav { background: #FFF8E1; color: #F57F17; }
+  .btn-kayla { background: var(--purple-light); color: var(--purple); }
   .btn-edit { background: var(--accent-light); color: var(--accent); }
   .btn-cook { background: var(--header); color: var(--header-text); }
   .btn-print { background: var(--accent); color: white; }
@@ -137,7 +146,8 @@
     <span class="search-icon">🔍</span>
     <input type="text" id="searchInput" placeholder="Search recipes, ingredients, keywords…" oninput="renderRecipes()">
   </div>
-  <div class="chips" id="chips"></div>
+  <div class="filter-level1" id="filterLevel1"></div>
+  <div class="filter-level2" id="filterLevel2"></div>
   <div class="count-label" id="countLabel"></div>
   <div class="recipe-grid" id="recipeGrid"><div class="loading">Loading recipes…</div></div>
 </div>
@@ -172,7 +182,9 @@
           <option>Appetizers</option><option>Breakfast</option><option>Main Course</option>
           <option>Desserts</option><option>Soups & Salads</option><option>Sides</option>
           <option>Snacks</option><option>Breads & Baking</option><option>Grilling & BBQ</option>
-          <option>Slow Cooker</option><option>Sauces & Dressings</option><option>Drinks</option><option>Other</option>
+          <option>Slow Cooker</option><option>Sauces & Dressings</option>
+          <option>Christmas</option><option>Thanksgiving</option>
+          <option>Drinks</option><option>Other</option>
         </select>
       </div>
       <div class="form-row-half">
@@ -210,6 +222,7 @@
       <div class="detail-actions">
         <button class="btn-action btn-close" onclick="closeOverlay('detailOverlay')">Close</button>
         <button class="btn-action btn-fav" id="favBtn" onclick="toggleFavorite()">⭐ Fav</button>
+        <button class="btn-action btn-kayla" id="kaylaBtn" onclick="toggleKayla()">👩 Kayla's</button>
         <button class="btn-action btn-edit" onclick="openEdit()">✏️ Edit</button>
         <button class="btn-action btn-cook" onclick="openCookMode()">👨‍🍳 Cook</button>
         <button class="btn-action btn-print" onclick="printCurrentRecipe()">🖨️ Print</button>
@@ -275,7 +288,9 @@
 </script>
 <script>
 const SETTINGS_KEY = 'recipeBox_settings';
-let recipes = [], settings = { apiKey: '' }, currentRecipeId = null, activeFilter = 'All', pendingImageBase64 = null, editingId = null, cookSteps = [], cookIndex = 0;
+let recipes = [], settings = { apiKey: '' }, currentRecipeId = null;
+let activeL1 = 'kaylas', activeL2 = 'All';
+let pendingImageBase64 = null, editingId = null, cookSteps = [], cookIndex = 0;
 
 function loadSettings() {
   try { settings = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || { apiKey: '' }; } catch(e) { settings = { apiKey: '' }; }
@@ -304,22 +319,40 @@ function initFirestore() {
   const { collection, query, orderBy, onSnapshot } = window._fb;
   onSnapshot(query(collection(window._db, 'recipes'), orderBy('created', 'desc')), (snap) => {
     recipes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderChips(); renderRecipes();
+    renderFilters(); renderRecipes();
   }, (err) => { console.error(err); showToast('Connection error.'); });
 }
 
-function renderChips() {
-  const cats = ['All', '⭐ Favorites', ...new Set(recipes.map(r => r.category).filter(Boolean))];
-  document.getElementById('chips').innerHTML = cats.map(c =>
-    '<button class="chip' + (activeFilter===c?' active':'') + '" onclick="setFilter(\'' + c.replace(/'/g,"\\'") + '\')">' + c + '</button>').join('');
+function renderFilters() {
+  const l1 = document.getElementById('filterLevel1');
+  const l2 = document.getElementById('filterLevel2');
+  const l1Items = [
+    { key: 'all', label: 'All' },
+    { key: 'favs', label: '⭐ Favorites' },
+    { key: 'kaylas', label: '👩 Kayla\'s' }
+  ];
+  l1.innerHTML = l1Items.map(i => {
+    let cls = 'chip';
+    if (i.key === activeL1) cls += i.key === 'kaylas' ? ' active-purple' : ' active-pink';
+    if (i.key === 'kaylas') cls += ' chip-kayla';
+    return '<button class="' + cls + '" onclick="setL1(\'' + i.key + '\')">' + i.label + '</button>';
+  }).join('');
+  const cats = ['All', ...new Set(recipes.map(r => r.category).filter(Boolean))];
+  l2.innerHTML = cats.map(c => {
+    const cls = 'chip' + (activeL2 === c ? ' active-sub' : '');
+    return '<button class="' + cls + '" onclick="setL2(\'' + c.replace(/'/g,"\\'") + '\')">' + c + '</button>';
+  }).join('');
 }
-function setFilter(cat) { activeFilter = cat; renderChips(); renderRecipes(); }
+
+function setL1(key) { activeL1 = key; activeL2 = 'All'; renderFilters(); renderRecipes(); }
+function setL2(cat) { activeL2 = cat; renderFilters(); renderRecipes(); }
 
 function getFiltered() {
   const q = document.getElementById('searchInput').value.toLowerCase().trim();
   return recipes.filter(r => {
-    if (activeFilter === '⭐ Favorites' && !r.favorite) return false;
-    if (activeFilter !== 'All' && activeFilter !== '⭐ Favorites' && r.category !== activeFilter) return false;
+    if (activeL1 === 'favs' && !r.favorite) return false;
+    if (activeL1 === 'kaylas' && !r.kaylas) return false;
+    if (activeL2 !== 'All' && r.category !== activeL2) return false;
     if (!q) return true;
     return (r.name||'').toLowerCase().includes(q)||(r.text||'').toLowerCase().includes(q)||
            (r.category||'').toLowerCase().includes(q)||(r.time||'').toLowerCase().includes(q)||
@@ -333,13 +366,13 @@ function renderRecipes() {
   document.getElementById('countLabel').textContent = filtered.length + ' recipe' + (filtered.length!==1?'s':'');
   document.getElementById('recipeCount').textContent = recipes.length + ' recipe' + (recipes.length!==1?'s':'');
   if (filtered.length === 0) {
-    grid.innerHTML = '<div class="empty"><div class="empty-icon">📖</div><h3>' + (recipes.length===0?'Your recipe box is empty':'No recipes found') + '</h3><p>' + (recipes.length===0?'Tap the button below to add your first recipe.':'Try a different search or filter.') + '</p></div>';
+    grid.innerHTML = '<div class="empty"><div class="empty-icon">' + (activeL1==='kaylas'?'👩':'📖') + '</div><h3>' + (activeL1==='kaylas'&&recipes.length>0?"No recipes in Kayla\'s collection yet":recipes.length===0?'Your recipe box is empty':'No recipes found') + '</h3><p>' + (activeL1==='kaylas'&&recipes.length>0?"Open any recipe and tap 👩 Kayla\'s to add it here.":'Try a different search or filter.') + '</p></div>';
     return;
   }
   grid.innerHTML = filtered.map(r => {
     const diff = r.difficulty ? '<span class="difficulty-badge diff-' + r.difficulty.toLowerCase() + '">' + r.difficulty + '</span>' : '';
-    return '<div class="recipe-card" onclick="openDetail(\'' + r.id + '\')">' +
-      (r.favorite ? '<div class="card-fav">⭐</div>' : '') +
+    const badges = (r.favorite || r.kaylas) ? '<div class="card-badges">' + (r.favorite?'<div class="card-badge">⭐</div>':'') + (r.kaylas?'<div class="card-badge card-badge-kayla">👩</div>':'') + '</div>' : '';
+    return '<div class="recipe-card" onclick="openDetail(\'' + r.id + '\')">' + badges +
       '<div class="card-img">' + (r.image?'<img src="' + r.image + '" alt="' + r.name + '" loading="lazy">':'🍽️') + '</div>' +
       '<div class="card-body"><div class="card-category">' + (r.category||'Uncategorized') + '</div>' +
       '<div class="card-title">' + (r.name||'Untitled Recipe') + '</div>' +
@@ -401,7 +434,7 @@ async function handleImageUpload(event, page) {
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + settings.apiKey },
         body: JSON.stringify({ model: 'gpt-4o', max_tokens: 1800, messages: [{ role: 'user', content: [
           { type: 'text', text: isPage2
-            ? 'This is page 2 of a recipe. Extract ONLY the recipe text from this page (ingredients and/or instructions). Return ONLY a JSON object with no markdown: {"text":"..."}'
+            ? 'This is page 2 of a recipe. Extract ONLY the recipe text from this page. Return ONLY a JSON object with no markdown: {"text":"..."}'
             : 'You are reading a printed or typed recipe. Extract: name (recipe title), text (full ingredients and instructions), time (prep and cook time as short string like "20 min prep / 45 min cook", empty string if not found), servings (like "4 servings", empty string if not found). Return ONLY a JSON object with no markdown: {"name":"...","text":"...","time":"...","servings":"..."}' },
           { type: 'image_url', image_url: { url: compressed, detail: 'high' } }
         ]}]})
@@ -490,7 +523,7 @@ async function saveRecipe() {
       showToast('Recipe updated! ✅');
     } else {
       const { collection, addDoc } = window._fb;
-      await addDoc(collection(window._db, 'recipes'), { ...data, favorite: false, created: new Date().toISOString() });
+      await addDoc(collection(window._db, 'recipes'), { ...data, favorite: false, kaylas: false, created: new Date().toISOString() });
       showToast('Recipe saved! 🎉');
     }
     closeOverlay('addOverlay');
@@ -516,6 +549,9 @@ function openDetail(id) {
   if (r.notes) { notesEl.innerHTML = '<strong>📝 Notes</strong>' + r.notes; notesEl.style.display = 'block'; }
   else { notesEl.style.display = 'none'; }
   document.getElementById('favBtn').textContent = r.favorite ? '💛 Unfav' : '⭐ Fav';
+  document.getElementById('kaylaBtn').textContent = r.kaylas ? '💜 Remove' : '👩 Kayla\'s';
+  document.getElementById('kaylaBtn').style.background = r.kaylas ? '#7B4FA6' : '';
+  document.getElementById('kaylaBtn').style.color = r.kaylas ? 'white' : '';
   const img = document.getElementById('detailImg'), ph = document.getElementById('detailPlaceholder');
   if (r.image) { img.src = r.image; img.style.display = 'block'; ph.style.display = 'none'; }
   else { img.style.display = 'none'; ph.style.display = 'flex'; }
@@ -529,6 +565,17 @@ async function toggleFavorite() {
   await updateDoc(doc(window._db, 'recipes', currentRecipeId), { favorite: !r.favorite });
   showToast(r.favorite ? 'Removed from favorites' : '⭐ Added to favorites!');
   document.getElementById('favBtn').textContent = r.favorite ? '⭐ Fav' : '💛 Unfav';
+}
+
+async function toggleKayla() {
+  const r = recipes.find(x => x.id === currentRecipeId);
+  if (!r) return;
+  const { doc, updateDoc } = window._fb;
+  await updateDoc(doc(window._db, 'recipes', currentRecipeId), { kaylas: !r.kaylas });
+  showToast(r.kaylas ? 'Removed from Kayla\'s' : '👩 Added to Kayla\'s!');
+  document.getElementById('kaylaBtn').textContent = r.kaylas ? '👩 Kayla\'s' : '💜 Remove';
+  document.getElementById('kaylaBtn').style.background = r.kaylas ? '' : '#7B4FA6';
+  document.getElementById('kaylaBtn').style.color = r.kaylas ? '' : 'white';
 }
 
 function openCookMode() {
@@ -581,7 +628,7 @@ function printCurrentRecipe() {
   if (r.difficulty) win.document.write('📊 ' + r.difficulty + '&nbsp;&nbsp;&nbsp;');
   if (r.source) win.document.write('📖 ' + r.source);
   win.document.write('</div>');
-  if (scale !== 1) win.document.write('<div class="scale-note">⚖️ Scaled to ' + scalePrompt + ' servings (all amounts adjusted)</div>');
+  if (scale !== 1) win.document.write('<div class="scale-note">⚖️ Scaled to ' + scalePrompt + ' servings</div>');
   if (r.image) win.document.write('<img src="' + r.image + '">');
   win.document.write('<div class="content">' + text.replace(/</g,'&lt;') + '</div>');
   if (r.notes) win.document.write('<div class="notes"><strong>📝 Notes:</strong> ' + r.notes + '</div>');
@@ -596,7 +643,7 @@ function exportAllRecipes() {
   win.document.write('<html><head><title>My Recipe Box</title><style>body{font-family:Georgia,serif;max-width:750px;margin:2rem auto;padding:1rem;color:#3D1020;}h1{font-size:2.5rem;text-align:center;color:#72243E;}h1+p{text-align:center;color:#C47A95;font-size:0.9rem;margin-bottom:2rem;border-bottom:2px solid #F4C0D1;padding-bottom:1rem;}.recipe{margin-bottom:3rem;page-break-inside:avoid;border-bottom:1px solid #F4C0D1;padding-bottom:2rem;}.category{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:#D4537E;}.recipe h2{font-size:1.5rem;color:#72243E;margin-bottom:0.4rem;}.meta{font-size:0.82rem;color:#993556;margin-bottom:1rem;}.content{font-size:0.9rem;line-height:1.8;white-space:pre-wrap;}img{max-width:280px;border-radius:8px;float:right;margin-left:1.5rem;margin-bottom:1rem;}.notes{background:#FFF8E1;border-radius:6px;padding:0.6rem 0.85rem;font-size:0.85rem;color:#5D4037;margin-top:0.75rem;}</style></head><body>');
   win.document.write('<h1>🍳 My Recipe Box</h1><p>' + recipes.length + ' recipes — ' + new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) + '</p>');
   recipes.forEach(r => {
-    win.document.write('<div class="recipe"><div class="category">' + (r.category||'Uncategorized') + (r.favorite?' ⭐':'') + '</div>');
+    win.document.write('<div class="recipe"><div class="category">' + (r.category||'Uncategorized') + (r.favorite?' ⭐':'') + (r.kaylas?' 👩':'') + '</div>');
     win.document.write('<h2>' + r.name + '</h2><div class="meta">');
     if (r.time) win.document.write('⏱ ' + r.time + '&nbsp;&nbsp;');
     if (r.servings) win.document.write('🍽 ' + r.servings + '&nbsp;&nbsp;');
